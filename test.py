@@ -1,10 +1,9 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
 from keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
-import math
 from RBF.rbflayer import RBFLayer, InitCentersRandom
 
 # Importing the dataset
@@ -25,9 +24,9 @@ y = dataset_scaled[:, 1]
 dataset_sz = X.shape[0]
 
 # load Trained Model
-BKP = load_model('Trained_Model/TICKER-BKP.h5')
-RBF = load_model('Trained_Model/TICKER-RBF.h5', custom_objects={'RBFLayer': RBFLayer})
-RNN = load_model('Trained_Model/TICKER-RNN.h5')
+BKP = load_model('TICKER-BKP.h5')
+RBF = load_model('TICKER-RBF.h5', custom_objects={'RBFLayer': RBFLayer})
+RNN = load_model('TICKER-RNN.h5')
 
 
 def eval(regressor, inputs):
@@ -65,9 +64,8 @@ def eval(regressor, inputs):
 
 
 inputs = np.array(X)
+inputs_rnn = np.reshape(inputs, (dataset_sz, 1, 1))
+
 BKP_toler_rate, BKP_err_cnt, BKP_mse = eval(BKP, inputs)
-
 RBF_toler_rate, RBF_err_cnt, RBF_mse = eval(RBF, inputs)
-
-inputs = np.reshape(inputs, (dataset_sz, 1, 1))
-RNN_toler_rate, RNN_err_cnt, RNN_mse = eval(RNN, inputs)
+RNN_toler_rate, RNN_err_cnt, RNN_mse = eval(RNN, inputs_rnn)
