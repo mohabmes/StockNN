@@ -1,9 +1,10 @@
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from keras.models import load_model
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
+from err import error_count, calc_diff
 from RBF.rbflayer import RBFLayer, InitCentersRandom
 
 # Importing the dataset
@@ -41,31 +42,21 @@ def eval(regressor, inputs):
     # real test data price VS. predicted price
     predicted_stock_price = scaler.inverse_transform(dataset_total) 
     
-    toler_rate = np.zeros(dataset_sz)
-    for i in range(0, dataset_sz):
-        toler_rate[i] = abs(predicted_stock_price[i, 0] - predicted_stock_price[i, 1])
-    
-    toler_treshold = 3.0
-    err_cnt = 0
-    for i in range(0, dataset_sz):
-        if abs(predicted_stock_price[i, 0] - predicted_stock_price[i, 1]) <= (toler_treshold/100) * predicted_stock_price[i, 0] :
-            pass
-        else:
-            err_cnt +=1
-    
-    mse = 0.0
-    for i in range(0, dataset_sz):
-        mse += (predicted_stock_price[i, 0] - predicted_stock_price[i, 1])**2
-    
-    mse /= dataset_sz
-    
-    return toler_rate, err_cnt, mse
+    toler_rate = calc_diff(predicted_stock_price[:, 0], predicted_stock_price[:, 1])
+
+    err_cnt = error_count(predicted_stock_price[:, 0], predicted_stock_price[:, 1], toler_treshold = 3.0)
+
+    mse = mean_squared_error(predicted_stock_price[:, 0], predicted_stock_price[:, 1])
+	
+	mape = mean_absolute_percentage_error(all_prices[:, 0], all_prices[:, 1])
+
+    return toler_rate, err_cnt, mse, mape
 
 
 
 inputs = np.array(X)
 inputs_rnn = np.reshape(inputs, (dataset_sz, 1, 1))
 
-BKP_toler_rate, BKP_err_cnt, BKP_mse = eval(BKP, inputs)
-RBF_toler_rate, RBF_err_cnt, RBF_mse = eval(RBF, inputs)
-RNN_toler_rate, RNN_err_cnt, RNN_mse = eval(RNN, inputs_rnn)
+BKP_toler_rate, BKP_err_cnt, BKP_mse, BKP_mape = eval(BKP, inputs)
+RBF_toler_rate, RBF_err_cnt, RBF_mse, RBF_mape = eval(RBF, inputs)
+RNN_toler_rate, RNN_err_cnt, RNN_mse, RNN_mape = eval(RNN, inputs_rnn)
